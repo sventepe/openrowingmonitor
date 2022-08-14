@@ -13,10 +13,11 @@
 import loglevel from 'loglevel'
 import { createMovingAverager } from './averager/MovingAverager.js'
 import { createMovingFlankDetector } from './MovingFlankDetector.js'
+import config from '../tools/ConfigManager.js'
 
 const log = loglevel.getLogger('RowingEngine')
 
-function createRowingEngine (rowerSettings) {
+function createRowingEngine(rowerSettings) {
   let workoutHandler
   const flankDetector = createMovingFlankDetector(rowerSettings)
   const angularDisplacementPerImpulse = (2.0 * Math.PI) / rowerSettings.numOfImpulsesPerRevolution
@@ -53,63 +54,90 @@ function createRowingEngine (rowerSettings) {
   reset()
 
   // called if the sensor detected an impulse, currentDt is an interval in seconds
-  function handleRotationImpulse (currentDt) {
-    // impulses that take longer than maximumImpulseTimeBeforePause seconds are considered a pause
-    if (currentDt > rowerSettings.maximumImpulseTimeBeforePause) {
-      workoutHandler.handlePause(currentDt)
-      return
-    }
+  function handleRotationImpulse(currentDt) {
+    let initialDt = currentDt
+    let positiveDt = currentDt < 0 ? currentDt * -1 : currentDt
 
-    totalTime += currentDt
+    
+    totalTime += positiveDt
     totalNumberOfImpulses++
-
     // detect where we are in the rowing phase (drive or recovery)
-    flankDetector.pushValue(currentDt)
+    flankDetector.pushValue(positiveDt)
 
-    // we implement a finite state machine that goes between "Drive" and "Recovery" phases,
-    // which allows a phase-change if sufficient time has passed and there is a plausible flank
-    if (cyclePhase === 'Drive') {
-      // We currently are in the "Drive" phase, lets determine what the next phase is
-      if (flankDetector.isFlywheelUnpowered()) {
-        // The flank detector detects that the flywheel has no power exerted on it
+    if (config.gpioPin2) {
+      log.info('currentDt: ' + currentDt)
+      if (initialDt > 0 && cyclePhase === 'Drive') {
+        log.info('Continue Drive')
+        updateDrivePhase(positiveDt)
+      } else if (initialDt < 0 && cyclePhase === 'Recovery') {
+        log.info('Continue Recovery')
+        updateRecoveryPhase(positiveDt)
+      } else if (initialDt > 0 && cyclePhase === 'Recovery') {
+        log.info('Starting Drive')
+        recoveryPhaseLength = (totalTime - flankDetector.timeToBeginOfFlank()) - recoveryPhaseStartTime
+        startDrivePhase(positiveDt)
+        cyclePhase = 'Drive'
+      }
+      if (initialDt < 0 && cyclePhase === 'Drive') {
+        log.info('Starting Recovery')
         drivePhaseLength = (totalTime - flankDetector.timeToBeginOfFlank()) - drivePhaseStartTime
-        if (drivePhaseLength >= rowerSettings.minimumDriveTime) {
-          // We change into the "Recovery" phase since we have been long enough in the Drive phase, and we see a clear lack of power
-          // exerted on the flywheel
-          startRecoveryPhase(currentDt)
-          cyclePhase = 'Recovery'
+        startRecoveryPhase(positiveDt)
+        cyclePhase = 'Recovery'
+      }
+      // impulses that take longer than maximumImpulseTimeBeforePause seconds are considered a pause
+      if (currentDt > rowerSettings.maximumImpulseTimeBeforePause) {
+        workoutHandler.handlePause(positiveDt)
+        return
+      }
+
+
+    } else {
+      // we implement a finite state machine that goes between "Drive" and "Recovery" phases,
+      // which allows a phase-change if sufficient time has passed and there is a plausible flank
+      if (cyclePhase === 'Drive') {
+        // We currently are in the "Drive" phase, lets determine what the next phase is
+        if (flankDetector.isFlywheelUnpowered()) {
+          // The flank detector detects that the flywheel has no power exerted on it
+          drivePhaseLength = (totalTime - flankDetector.timeToBeginOfFlank()) - drivePhaseStartTime
+          if (drivePhaseLength >= rowerSettings.minimumDriveTime) {
+            // We change into the "Recovery" phase since we have been long enough in the Drive phase, and we see a clear lack of power
+            // exerted on the flywheel
+            startRecoveryPhase(currentDt)
+            cyclePhase = 'Recovery'
+          } else {
+            // We seem to have lost power to the flywheel, but it is too early according to the settings. We stay in the Drive Phase
+            log.debug(`Time: ${totalTime.toFixed(4)} sec, impulse ${totalNumberOfImpulses}: flank suggests no power (${flankDetector.accelerationAtBeginOfFlank().toFixed(1)} rad/s2), but waiting for for recoveryPhaseLength (${recoveryPhaseLength.toFixed(4)} sec) to exceed minimumRecoveryTime (${rowerSettings.minimumRecoveryTime} sec)`)
+            updateDrivePhase(currentDt)
+          }
         } else {
-          // We seem to have lost power to the flywheel, but it is too early according to the settings. We stay in the Drive Phase
-          log.debug(`Time: ${totalTime.toFixed(4)} sec, impulse ${totalNumberOfImpulses}: flank suggests no power (${flankDetector.accelerationAtBeginOfFlank().toFixed(1)} rad/s2), but waiting for for recoveryPhaseLength (${recoveryPhaseLength.toFixed(4)} sec) to exceed minimumRecoveryTime (${rowerSettings.minimumRecoveryTime} sec)`)
+          // We stay in the "Drive" phase as the acceleration is lacking
           updateDrivePhase(currentDt)
         }
       } else {
-        // We stay in the "Drive" phase as the acceleration is lacking
-        updateDrivePhase(currentDt)
-      }
-    } else {
-      // We currently are in the "Recovery" phase, lets determine what the next phase is
-      if (flankDetector.isFlywheelPowered()) {
-        // The flank detector consistently detects some force on the flywheel
-        recoveryPhaseLength = (totalTime - flankDetector.timeToBeginOfFlank()) - recoveryPhaseStartTime
-        if (recoveryPhaseLength >= rowerSettings.minimumRecoveryTime) {
-          // We change into the "Drive" phase if we have been long enough in the "Recovery" phase, and we see a consistent force being
-          // exerted on the flywheel
-          startDrivePhase(currentDt)
-          cyclePhase = 'Drive'
+        // We currently are in the "Recovery" phase, lets determine what the next phase is
+        if (flankDetector.isFlywheelPowered()) {
+          // The flank detector consistently detects some force on the flywheel
+          recoveryPhaseLength = (totalTime - flankDetector.timeToBeginOfFlank()) - recoveryPhaseStartTime
+          if (recoveryPhaseLength >= rowerSettings.minimumRecoveryTime) {
+            // We change into the "Drive" phase if we have been long enough in the "Recovery" phase, and we see a consistent force being
+            // exerted on the flywheel
+            startDrivePhase(currentDt)
+            cyclePhase = 'Drive'
+          } else {
+            // We see a force, but the "Recovery" phase has been too short, we stay in the "Recovery" phase
+            log.debug(`Time: ${totalTime.toFixed(4)} sec, impulse ${totalNumberOfImpulses}: flank suggests power (${flankDetector.accelerationAtBeginOfFlank().toFixed(1)} rad/s2), but waiting for recoveryPhaseLength (${recoveryPhaseLength.toFixed(4)} sec) to exceed minimumRecoveryTime (${rowerSettings.minimumRecoveryTime} sec)`)
+            updateRecoveryPhase(currentDt)
+          }
         } else {
-          // We see a force, but the "Recovery" phase has been too short, we stay in the "Recovery" phase
-          log.debug(`Time: ${totalTime.toFixed(4)} sec, impulse ${totalNumberOfImpulses}: flank suggests power (${flankDetector.accelerationAtBeginOfFlank().toFixed(1)} rad/s2), but waiting for recoveryPhaseLength (${recoveryPhaseLength.toFixed(4)} sec) to exceed minimumRecoveryTime (${rowerSettings.minimumRecoveryTime} sec)`)
+          // No force on the flywheel, let's continue the "Drive" phase
           updateRecoveryPhase(currentDt)
         }
-      } else {
-        // No force on the flywheel, let's continue the "Drive" phase
-        updateRecoveryPhase(currentDt)
       }
+
     }
   }
 
-  function startDrivePhase (currentDt) {
+  function startDrivePhase(currentDt) {
     // First, we conclude the "Recovery" phase
     log.debug('*** recovery phase completed')
     if (rowerSettings.minimumRecoveryTime <= recoveryPhaseLength && rowerSettings.minimumDriveTime <= drivePhaseLength) {
@@ -171,6 +199,7 @@ function createRowingEngine (rowerSettings) {
 
     // Update the metrics
     if (workoutHandler) {
+      log.debug('startDrivePhase totalLinearDistance: ' + totalLinearDistance)
       workoutHandler.handleRecoveryEnd({
         timeSinceStart: totalTime,
         power: averagedCyclePower,
@@ -186,12 +215,13 @@ function createRowingEngine (rowerSettings) {
     }
   }
 
-  function updateDrivePhase (currentDt) {
+  function updateDrivePhase(currentDt) {
     // Update the key metrics on each impulse
     drivePhaseAngularDisplacement = ((totalNumberOfImpulses - flankDetector.noImpulsesToBeginFlank()) - drivePhaseStartAngularDisplacement) * angularDisplacementPerImpulse
     driveLinearDistance = Math.pow((dragFactor / rowerSettings.magicConstant), 1.0 / 3.0) * drivePhaseAngularDisplacement
     currentTorque = calculateTorque(currentDt)
     if (workoutHandler) {
+      log.debug('updateDrivePhase distance: ' + (totalLinearDistance + driveLinearDistance) + 'totalLinearDistance: ' + totalLinearDistance + ' driveLinearDistance: ' + driveLinearDistance)
       workoutHandler.updateKeyMetrics({
         timeSinceStart: totalTime,
         distance: totalLinearDistance + driveLinearDistance,
@@ -200,7 +230,7 @@ function createRowingEngine (rowerSettings) {
     }
   }
 
-  function startRecoveryPhase (currentDt) {
+  function startRecoveryPhase(currentDt) {
     // First, we conclude the "Drive" Phase
     log.debug('*** drive phase completed')
     if (rowerSettings.minimumRecoveryTime <= recoveryPhaseLength && rowerSettings.minimumDriveTime <= drivePhaseLength) {
@@ -230,6 +260,7 @@ function createRowingEngine (rowerSettings) {
 
     // Update the metrics
     if (workoutHandler) {
+      log.debug('startRecoveryPhase totalLinearDistance: ' + totalLinearDistance)
       workoutHandler.handleDriveEnd({
         timeSinceStart: totalTime,
         power: averagedCyclePower,
@@ -244,12 +275,13 @@ function createRowingEngine (rowerSettings) {
     }
   }
 
-  function updateRecoveryPhase (currentDt) {
+  function updateRecoveryPhase(currentDt) {
     // Update the key metrics on each impulse
     recoveryPhaseAngularDisplacement = ((totalNumberOfImpulses - flankDetector.noImpulsesToBeginFlank()) - recoveryPhaseStartAngularDisplacement) * angularDisplacementPerImpulse
     recoveryLinearDistance = Math.pow((dragFactor / rowerSettings.magicConstant), 1.0 / 3.0) * recoveryPhaseAngularDisplacement
     currentTorque = calculateTorque(currentDt)
     if (workoutHandler) {
+      log.debug('updateRecoveryPhase distance: ' + (totalLinearDistance + recoveryLinearDistance) + 'totalLinearDistance: ' + totalLinearDistance + ' recoveryLinearDistance: ' + recoveryLinearDistance)
       workoutHandler.updateKeyMetrics({
         timeSinceStart: totalTime,
         distance: totalLinearDistance + recoveryLinearDistance,
@@ -258,7 +290,7 @@ function createRowingEngine (rowerSettings) {
     }
   }
 
-  function calculateLinearVelocity () {
+  function calculateLinearVelocity() {
     // Here we calculate the AVERAGE speed for the displays, NOT the topspeed of the stroke
     let tempLinearVelocity = linearCycleVelocity
     if (drivePhaseLength > rowerSettings.minimumDriveTime && cycleLength > minimumCycleLength) {
@@ -270,7 +302,7 @@ function createRowingEngine (rowerSettings) {
     return tempLinearVelocity
   }
 
-  function calculateCyclePower () {
+  function calculateCyclePower() {
     // Here we calculate the AVERAGE power for the displays, NOT the top power of the stroke
     let cyclePower = averagedCyclePower
     if (drivePhaseLength > rowerSettings.minimumDriveTime && cycleLength > minimumCycleLength) {
@@ -282,7 +314,7 @@ function createRowingEngine (rowerSettings) {
     return cyclePower
   }
 
-  function calculateTorque (currentDt) {
+  function calculateTorque(currentDt) {
     let torque = currentTorque
     if (currentDt > 0) {
       previousAngularVelocity = currentAngularVelocity
@@ -292,7 +324,7 @@ function createRowingEngine (rowerSettings) {
     return torque
   }
 
-  function reset () {
+  function reset() {
     // to init displacements with plausible defaults we assume, that one rowing cycle transforms to nine meters of distance...
     const defaultDisplacementForRowingCycle = 8.0 / Math.pow(((rowerSettings.dragFactor / 1000000) / rowerSettings.magicConstant), 1.0 / 3.0)
 
@@ -328,7 +360,7 @@ function createRowingEngine (rowerSettings) {
     currentAngularVelocity = 0.0
   }
 
-  function notify (receiver) {
+  function notify(receiver) {
     workoutHandler = receiver
   }
 

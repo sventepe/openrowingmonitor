@@ -55,7 +55,7 @@ function createRowingStatistics (config) {
   // we could respect this and set the update rate accordingly
   setInterval(emitPeripheralMetrics, 1000)
   function emitPeripheralMetrics () {
-    emitter.emit('peripheralMetricsUpdate', getMetrics())
+    emitter.emit('peripheralMetricsUpdate ', getMetrics())
   }
 
   function handleDriveEnd (stroke) {
@@ -81,6 +81,7 @@ function createRowingStatistics (config) {
     caloriesTotal += calories
     lastStrokeDuration = stroke.duration
     distanceTotal = stroke.distance
+    log.debug('Stroke.distance: ' + stroke.distance)
     lastStrokeDistance = stroke.strokeDistance
     lastStrokeState = stroke.strokeState
     lastStrokeSpeed = stroke.speed
@@ -192,6 +193,7 @@ function createRowingStatistics (config) {
     speedAverager.reset()
     powerRatioAverager.reset()
     sessionState = 'waitingForStart'
+    lastStrokeState = 'LET\'S GO'
   }
 
   // clear the metrics in case the user pauses rowing

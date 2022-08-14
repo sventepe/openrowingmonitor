@@ -72,8 +72,12 @@ const gpioTimerService = child_process.fork('./app/gpio/GpioTimerService.js')
 gpioTimerService.on('message', handleRotationImpulse)
 
 function handleRotationImpulse (dataPoint) {
-  workoutRecorder.recordRotationImpulse(dataPoint)
   rowingEngine.handleRotationImpulse(dataPoint)
+  if (dataPoint <0) {
+    workoutRecorder.recordRotationImpulse(dataPoint*-1)
+  }else {
+    workoutRecorder.recordRotationImpulse(dataPoint*-1)
+  }
 }
 
 const rowingEngine = createRowingEngine(config.rowerSettings)
@@ -92,6 +96,7 @@ rowingStatistics.on('recoveryFinished', (metrics) => {
   `, split: ${metrics.splitFormatted}, ratio: ${metrics.powerRatio.toFixed(2)}, dist: ${metrics.distanceTotal.toFixed(1)}m` +
   `, cal: ${metrics.caloriesTotal.toFixed(1)}kcal, SPM: ${metrics.strokesPerMinute.toFixed(1)}, speed: ${metrics.speed.toFixed(2)}km/h` +
   `, cal/hour: ${metrics.caloriesPerHour.toFixed(1)}kcal, cal/minute: ${metrics.caloriesPerMinute.toFixed(1)}kcal`)
+  log.info('Recovery finished: ' + JSON.stringify(metrics))
   webServer.notifyClients('metrics', metrics)
   peripheralManager.notifyMetrics('strokeFinished', metrics)
   if (metrics.sessionState === 'rowing') {

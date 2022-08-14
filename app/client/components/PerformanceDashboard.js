@@ -12,6 +12,8 @@ import './DashboardMetric.js'
 import './DashboardActions.js'
 import './BatteryIcon.js'
 import { icon_route, icon_stopwatch, icon_bolt, icon_paddle, icon_heartbeat, icon_fire, icon_clock } from '../lib/icons.js'
+import './QuestMetric.js'
+import '../quests/RPMIntervalQuest.js'
 
 @customElement('performance-dashboard')
 export class PerformanceDashboard extends AppElement {
@@ -32,19 +34,19 @@ export class PerformanceDashboard extends AppElement {
       }
     }
 
-    dashboard-metric, dashboard-actions {
+    dashboard-metric,quest-metric,rpm-interval-quest, dashboard-actions {
       background: var(--theme-widget-color);
       text-align: center;
       position: relative;
-      padding: 0.5em 0.2em 0 0.2em;
-      border-radius: var(--theme-border-radius);
+      padding: 1.5em 0 0 0;
+      box-sizing: border-box;
     }
 
     dashboard-actions {
       padding: 0.5em 0 0 0;
     }
   `
-
+//padding: 0.5em 0.2em 0 0.2em;
   @property({ type: Object })
     metrics
 
@@ -56,7 +58,7 @@ export class PerformanceDashboard extends AppElement {
     return html`
       <dashboard-metric .icon=${icon_route} .unit=${metrics?.distanceTotal?.unit || 'm'} .value=${metrics?.distanceTotal?.value}></dashboard-metric>
       <dashboard-metric .icon=${icon_stopwatch} unit="/500m" .value=${metrics?.splitFormatted?.value}></dashboard-metric>
-      <dashboard-metric .icon=${icon_bolt} unit="watt" .value=${metrics?.power?.value}></dashboard-metric>
+      <rpm-interval-quest  .rpm=${metrics?.strokesPerMinute?.value} .totalTime=${metrics?.durationTotal?.value} .strokesTotal=${metrics?.strokesTotal?.value} .distanceTotal=${metrics?.distanceTotal?.value}></rpm-interval-quest>
       <dashboard-metric .icon=${icon_paddle} unit="/min" .value=${metrics?.strokesPerMinute?.value}></dashboard-metric>
       ${metrics?.heartrate?.value
         ? html`

@@ -9,7 +9,7 @@ import NoSleep from 'nosleep.js'
 import { filterObjectByKeys } from './helper.js'
 
 const rowingMetricsFields = ['strokesTotal', 'distanceTotal', 'caloriesTotal', 'power', 'heartrate',
-  'heartrateBatteryLevel', 'splitFormatted', 'strokesPerMinute', 'durationTotalFormatted']
+  'heartrateBatteryLevel', 'splitFormatted', 'strokesPerMinute', 'durationTotalFormatted','strokeState']
 
 export function createApp (app) {
   const urlParameters = new URLSearchParams(window.location.search)
@@ -81,8 +81,9 @@ export function createApp (app) {
               activeFields = ['heartrate', 'heartrateBatteryLevel']
             }
 
-            const filteredData = filterObjectByKeys(data, activeFields)
-            app.updateState({ ...app.getState(), metrics: filteredData })
+            // const filteredData = filterObjectByKeys(data, activeFields)
+            // app.updateState({ ...app.getState(), metrics: filteredData })
+            app.updateState({ ...app.getState(), metrics: data })
             break
           }
           case 'authorizeStrava': {
