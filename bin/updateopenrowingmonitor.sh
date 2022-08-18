@@ -97,7 +97,7 @@ switch_branch() {
 CURRENT_DIR=$(pwd)
 SCRIPT_DIR="$( cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd )"
 INSTALL_DIR="$(dirname "$SCRIPT_DIR")"
-GIT_REMOTE="https://github.com/laberning/openrowingmonitor.git"
+GIT_REMOTE="https://github.com/sventepe/openrowingmonitor.git"
 
 cd $INSTALL_DIR
 

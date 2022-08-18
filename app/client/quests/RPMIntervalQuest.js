@@ -14,34 +14,34 @@ export class RPMIntervalQuest extends AppElement {
     super()
     this.totalMinutes = 30
     this.dampeningValue = 16
-    var maximumMetricValue = 28
-    var mediumMetricValue = 24
+    var maximumMetricValue = 29
+    var mediumMetricValue = 25
     var minimumMetricValue = 21
 
-    this.maximumDampenedValue = maximumMetricValue - this.dampeningValue
-    var mediumDampenedValue = mediumMetricValue - this.dampeningValue
-    var minimumDampenedValue = minimumMetricValue - this.dampeningValue
+    this.maximumDampenedValue = maximumMetricValue - this.dampeningValue//13
+    var mediumDampenedValue = mediumMetricValue - this.dampeningValue//9
+    var minimumDampenedValue = minimumMetricValue - this.dampeningValue //5
 
-    var minimumPercentage = 100 / this.maximumDampenedValue * minimumDampenedValue
-    var mediumPercentage = 100 / this.maximumDampenedValue * mediumDampenedValue
-    var maximumPercentage = 100
+    var minimumPercentage = 100 / this.maximumDampenedValue * minimumDampenedValue //35?38,46
+    var mediumPercentage = 100 / this.maximumDampenedValue * mediumDampenedValue //70?69
+    var maximumPercentage = 100 //100
 
     //input 26
     // var percentToDisplay = 100 / maximumDampenedValue * (26 - dampeningValue)
     //Pattern Ladder Up
-    var interval = [
-      minimumMetricValue,
-      mediumMetricValue,
-      maximumMetricValue,
-      minimumMetricValue,
-      mediumMetricValue,
-      maximumMetricValue,
-      minimumMetricValue,
-      mediumMetricValue,
-      maximumMetricValue,
-      minimumMetricValue
+    this.interval = [
+      mediumPercentage,
+      mediumPercentage,
+      maximumPercentage,
+      minimumPercentage,
+      mediumPercentage,
+      maximumPercentage,
+      minimumPercentage,
+      mediumPercentage,
+      maximumPercentage,
+      mediumPercentage
     ]
-    var intervalCount = interval.length
+    var intervalCount = this.interval.length
     var intervalLength = this.totalMinutes / intervalCount
 
 
@@ -57,6 +57,9 @@ export class RPMIntervalQuest extends AppElement {
 
   @property({ type: Number })
   dampeningValue = 0
+
+  @property({ type: Array })
+  interval = []
 
   @property({ type: Number })
   totalTime = 0
@@ -261,34 +264,34 @@ export class RPMIntervalQuest extends AppElement {
     <div class="progressFill" style="width:${(100/this.totalMinutes) * (this.totalTime / 60)}%"></div>
     <table class="graph">
     <tbody>
-    <tr style="height:35%">
+    <tr style="height:${this.interval[0]}%">
     <td></td>
     </tr>
-    <tr style="height:70%">
+    <tr style="height:${this.interval[1]}%">
     <td></td>
     </tr>
-    <tr style="height:100%">
+    <tr style="height:${this.interval[2]}%">
     <td></td>
     </tr>
-      <tr style="height:35%">
+      <tr style="height:${this.interval[3]}%">
       <td></td>
       </tr>
-      <tr style="height:70%">
+      <tr style="height:${this.interval[4]}%">
         <td></td>
         </tr>
-      <tr style="height:100%">
+      <tr style="height:${this.interval[5]}%">
         <td></td>
       </tr>
-      <tr style="height:35%">
+      <tr style="height:${this.interval[6]}%">
         <td></td>
         </tr>
-        <tr style="height:70%">
+        <tr style="height:${this.interval[7]}%">
         <td></td>
         </tr>
-        <tr style="height:100%">
+        <tr style="height:${this.interval[8]}%">
         <td></td>
         </tr>
-        <tr style="height:35%">
+        <tr style="height:${this.interval[9]}%">
         <td></td>
         </tr>
         </tbody>
