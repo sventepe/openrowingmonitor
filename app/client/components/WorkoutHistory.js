@@ -8,14 +8,9 @@
 import { AppElement, html, css } from './AppElement.js'
 import { APP_STATE } from '../store/appState.js'
 import { customElement, property } from 'lit/decorators.js'
-import './DashboardMetric.js'
-import './DashboardActions.js'
-import './BatteryIcon.js'
 import { icon_route, icon_stopwatch, icon_bolt, icon_paddle, icon_heartbeat, icon_fire, icon_clock } from '../lib/icons.js'
-import './QuestMetric.js'
-import '../quests/RPMIntervalQuest.js'
 
-@customElement('performance-dashboard')
+@customElement('workout-history')
 export class PerformanceDashboard extends AppElement {
   static styles = css`
     :host {
@@ -36,7 +31,6 @@ export class PerformanceDashboard extends AppElement {
 
     dashboard-metric,quest-metric,rpm-interval-quest, dashboard-actions {
       background: var(--theme-widget-color);
-      text-align: center;
       position: relative;
       padding: 1.5em 0 0 0;
       box-sizing: border-box;

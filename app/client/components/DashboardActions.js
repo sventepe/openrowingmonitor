@@ -7,7 +7,7 @@
 
 import { AppElement, html, css } from './AppElement.js'
 import { customElement, state } from 'lit/decorators.js'
-import { icon_undo, icon_expand, icon_compress, icon_poweroff, icon_bluetooth, icon_upload } from '../lib/icons.js'
+import { icon_undo, icon_expand, icon_compress, icon_poweroff, icon_bluetooth, icon_upload, icon_stopwatch } from '../lib/icons.js'
 import './AppDialog.js'
 
 @customElement('dashboard-actions')
@@ -66,6 +66,7 @@ export class DashboardActions extends AppElement {
     <button @click=${this.reset}>${icon_undo}</button>
     ${this.renderOptionalButtons()}
     <button @click=${this.switchPeripheralMode}>${icon_bluetooth}</button>
+    <button @click=${this.showWorkoutHistory}>${icon_stopwatch}</button>
     <div class="peripheral-mode">${this.peripheralMode()}</div>
     ${this.dialog ? this.dialog : ''}
   `
@@ -131,6 +132,10 @@ export class DashboardActions extends AppElement {
 
   switchPeripheralMode () {
     this.sendEvent('triggerAction', { command: 'switchPeripheralMode' })
+  }
+
+  showWorkoutHistory () {
+    this.sendEvent('triggerAction', { command: 'showWorkoutHistory' })
   }
 
   uploadTraining () {
