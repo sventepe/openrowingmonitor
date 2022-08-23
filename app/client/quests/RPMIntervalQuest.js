@@ -10,25 +10,25 @@ import { customElement, property } from 'lit/decorators.js'
 
 @customElement('rpm-interval-quest')
 export class RPMIntervalQuest extends AppElement {
-  constructor() {
+  constructor () {
     super()
     this.totalMinutes = 30
     this.dampeningValue = 16
-    var maximumMetricValue = 29
-    var mediumMetricValue = 25
-    var minimumMetricValue = 21
+    const maximumMetricValue = 29
+    const mediumMetricValue = 25
+    const minimumMetricValue = 21
 
-    this.maximumDampenedValue = maximumMetricValue - this.dampeningValue//13
-    var mediumDampenedValue = mediumMetricValue - this.dampeningValue//9
-    var minimumDampenedValue = minimumMetricValue - this.dampeningValue //5
+    this.maximumDampenedValue = maximumMetricValue - this.dampeningValue// 13
+    const mediumDampenedValue = mediumMetricValue - this.dampeningValue// 9
+    const minimumDampenedValue = minimumMetricValue - this.dampeningValue // 5
 
-    var minimumPercentage = 100 / this.maximumDampenedValue * minimumDampenedValue //35?38,46
-    var mediumPercentage = 100 / this.maximumDampenedValue * mediumDampenedValue //70?69
-    var maximumPercentage = 100 //100
+    const minimumPercentage = 100 / this.maximumDampenedValue * minimumDampenedValue // 35?38,46
+    const mediumPercentage = 100 / this.maximumDampenedValue * mediumDampenedValue // 70?69
+    const maximumPercentage = 100 // 100
 
-    //input 26
+    // input 26
     // var percentToDisplay = 100 / maximumDampenedValue * (26 - dampeningValue)
-    //Pattern Ladder Up
+    // Pattern Ladder Up
     this.interval = [
       mediumPercentage,
       mediumPercentage,
@@ -41,38 +41,38 @@ export class RPMIntervalQuest extends AppElement {
       maximumPercentage,
       mediumPercentage
     ]
-    var intervalCount = this.interval.length
-    var intervalLength = this.totalMinutes / intervalCount
-
-
+    // const intervalCount = this.interval.length
+    // const intervalLength = this.totalMinutes / intervalCount
   }
+
   @property({ type: String })
-  fillPercentage = css`0`
+    fillPercentage = css`0`
 
   @property({ type: Number })
-  maximumDampenedValue = 0
+    maximumDampenedValue = 0
 
   @property({ type: Number })
-  totalMinutes = 0
+    totalMinutes = 0
 
   @property({ type: Number })
-  dampeningValue = 0
+    dampeningValue = 0
 
   @property({ type: Array })
-  interval = []
+    interval = []
 
   @property({ type: Number })
-  totalTime = 0
+    totalTime = 0
 
   @property({ type: Number })
-  distanceTotal = 0
+    distanceTotal = 0
 
   @property({ type: Number })
-  strokesTotal = 0
+    strokesTotal = 0
 
   @property({ type: Number })
-  rpm = 0
-  //padding an graph table entfernen, dann passt position der hr
+    rpm = 0
+
+  // padding an graph table entfernen, dann passt position der hr
   //      bottom: 35%;
   static styles = css`
 
@@ -215,8 +215,6 @@ export class RPMIntervalQuest extends AppElement {
           padding:0.5em 0;
           margin:-1em 0 0;
           font:normal 85%/120% arial,helvetica,sans-serif;
-    /* 			background:white; */
-    /* 			box-shadow:0 0 0.25em rgba(0,0,0,0.6); */
           font-weight:bold;
           opacity:0;
           transition:opacity 0.5s;
@@ -241,18 +239,17 @@ export class RPMIntervalQuest extends AppElement {
 
   `
 
-
   //   .graph tr:after {
   //     content:'';
   //     position:absolute;
   //     background:rgb(255, 102, 51);
   //     top:0; bottom:0;
-  //     left:0; 
+  //     left:0;
   //     width:${this.fillPercentage}%;
   // }
 
-  //von oben nach unten die Balken anzeigen und den Rest füllen??
-  render() {
+  // von oben nach unten die Balken anzeigen und den Rest füllen??
+  render () {
     // console.log('maximumDampenedValue is: ' + this.maximumDampenedValue)
     // console.log('rpm is: ' + this.rpm)
     // console.log('dampenedValue is: ' + this.dampeningValue)
@@ -261,7 +258,7 @@ export class RPMIntervalQuest extends AppElement {
     this.fillPercentage = css`90`
     return html`
     <div class="content">
-    <div class="progressFill" style="width:${(100/this.totalMinutes) * (this.totalTime / 60)}%"></div>
+    <div class="progressFill" style="width:${(100 / this.totalMinutes) * (this.totalTime / 60)}%"></div>
     <table class="graph">
     <tbody>
     <tr style="height:${this.interval[0]}%">
@@ -309,5 +306,4 @@ export class RPMIntervalQuest extends AppElement {
   //     <span class="metric-unit">${this.unit}</span>
   //   </div>
   //   <slot></slot>
-
 }

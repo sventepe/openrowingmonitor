@@ -73,10 +73,10 @@ gpioTimerService.on('message', handleRotationImpulse)
 
 function handleRotationImpulse (dataPoint) {
   rowingEngine.handleRotationImpulse(dataPoint)
-  if (dataPoint <0) {
-    workoutRecorder.recordRotationImpulse(dataPoint*-1)
-  }else {
-    workoutRecorder.recordRotationImpulse(dataPoint*-1)
+  if (dataPoint < 0) {
+    workoutRecorder.recordRotationImpulse(dataPoint * -1)
+  } else {
+    workoutRecorder.recordRotationImpulse(dataPoint * -1)
   }
 }
 

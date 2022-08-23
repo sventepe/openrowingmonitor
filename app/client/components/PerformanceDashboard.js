@@ -11,7 +11,7 @@ import { customElement, property } from 'lit/decorators.js'
 import './DashboardMetric.js'
 import './DashboardActions.js'
 import './BatteryIcon.js'
-import { icon_route, icon_stopwatch, icon_bolt, icon_paddle, icon_heartbeat, icon_fire, icon_clock } from '../lib/icons.js'
+import { icon_route, icon_stopwatch, icon_paddle, icon_heartbeat, icon_fire, icon_clock } from '../lib/icons.js'
 import './QuestMetric.js'
 import '../quests/RPMIntervalQuest.js'
 
@@ -46,7 +46,7 @@ export class PerformanceDashboard extends AppElement {
       padding: 0.5em 0 0 0;
     }
   `
-//padding: 0.5em 0.2em 0 0.2em;
+  // padding: 0.5em 0.2em 0 0.2em;
   @property({ type: Object })
     metrics
 
