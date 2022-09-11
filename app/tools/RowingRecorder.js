@@ -40,8 +40,10 @@ async function replayRowingFile (rotationImpulseHandler, options) {
 
   for await (const line of readLine) {
     const dt = parseFloat(line)
+    const postiveDt = dt < 0 ? dt * -1 : dt
+
     // if we want to replay in the original time, wait dt seconds
-    if (options.realtime) await wait(dt * 1000)
+    if (options.realtime) await wait(postiveDt * 1000)
     rotationImpulseHandler(dt)
   }
 }

@@ -13,8 +13,6 @@ import config from './tools/ConfigManager.js'
 import { createRowingEngine } from './engine/RowingEngine.js'
 import { createRowingStatistics } from './engine/RowingStatistics.js'
 import { createWebServer } from './WebServer.js'
-import { createPeripheralManager } from './ble/PeripheralManager.js'
-import { createAntManager } from './ant/AntManager.js'
 // eslint-disable-next-line no-unused-vars
 import { replayRowingSession } from './tools/RowingRecorder.js'
 import { createWorkoutRecorder } from './engine/WorkoutRecorder.js'
@@ -30,42 +28,56 @@ for (const [loggerName, logLevel] of Object.entries(config.loglevel)) {
 }
 
 log.info(`==== Open Rowing Monitor ${process.env.npm_package_version || ''} ====\n`)
-
-const peripheralManager = createPeripheralManager()
-
-peripheralManager.on('control', (event) => {
-  if (event?.req?.name === 'requestControl') {
-    event.res = true
-  } else if (event?.req?.name === 'reset') {
-    log.debug('reset requested')
-    resetWorkout()
-    event.res = true
-  // todo: we could use these controls once we implement a concept of a rowing session
-  } else if (event?.req?.name === 'stop') {
-    log.debug('stop requested')
-    peripheralManager.notifyStatus({ name: 'stoppedOrPausedByUser' })
-    event.res = true
-  } else if (event?.req?.name === 'pause') {
-    log.debug('pause requested')
-    peripheralManager.notifyStatus({ name: 'stoppedOrPausedByUser' })
-    event.res = true
-  } else if (event?.req?.name === 'startOrResume') {
-    log.debug('startOrResume requested')
-    peripheralManager.notifyStatus({ name: 'startedOrResumedByUser' })
-    event.res = true
-  } else if (event?.req?.name === 'peripheralMode') {
-    webServer.notifyClients('config', getConfig())
-    event.res = true
-  } else {
-    log.info('unhandled Command', event.req)
-  }
-})
+let peripheralManager = null
+let antManager
+if (config.bluetoothMode !== 'none') {
+  import('./ble/PeripheralManager.js').then(exports => {
+    peripheralManager = exports.createPeripheralManager()
+    peripheralManager.on('control', (event) => {
+      if (event?.req?.name === 'requestControl') {
+        event.res = true
+      } else if (event?.req?.name === 'reset') {
+        log.debug('reset requested')
+        resetWorkout()
+        event.res = true
+        // todo: we could use these controls once we implement a concept of a rowing session
+      } else if (event?.req?.name === 'stop') {
+        log.debug('stop requested')
+        peripheralManager.notifyStatus({ name: 'stoppedOrPausedByUser' })
+        event.res = true
+      } else if (event?.req?.name === 'pause') {
+        log.debug('pause requested')
+        peripheralManager.notifyStatus({ name: 'stoppedOrPausedByUser' })
+        event.res = true
+      } else if (event?.req?.name === 'startOrResume') {
+        log.debug('startOrResume requested')
+        peripheralManager.notifyStatus({ name: 'startedOrResumedByUser' })
+        event.res = true
+      } else if (event?.req?.name === 'peripheralMode') {
+        webServer.notifyClients('config', getConfig())
+        event.res = true
+      } else {
+        log.info('unhandled Command', event.req)
+      }
+    })
+  })
+  import('./ant/AntManager.js').then(exports => {
+    antManager = exports.createAntManager()
+    if (config.heartrateMonitorANT) {
+      antManager.on('heartrateMeasurement', (heartrateMeasurement) => {
+        rowingStatistics.handleHeartrateMeasurement(heartrateMeasurement)
+      })
+    }
+  })
+}
 
 function resetWorkout () {
   workoutRecorder.reset()
   rowingEngine.reset()
   rowingStatistics.reset()
-  peripheralManager.notifyStatus({ name: 'reset' })
+  if (config.bluetoothMode !== 'none') {
+    peripheralManager.notifyStatus({ name: 'reset' })
+  }
 }
 
 const gpioTimerService = child_process.fork('./app/gpio/GpioTimerService.js')
@@ -88,17 +100,21 @@ const workoutUploader = createWorkoutUploader(workoutRecorder)
 
 rowingStatistics.on('driveFinished', (metrics) => {
   webServer.notifyClients('metrics', metrics)
-  peripheralManager.notifyMetrics('strokeStateChanged', metrics)
+  if (config.bluetoothMode !== 'none') {
+    peripheralManager.notifyMetrics('strokeStateChanged', metrics)
+  }
 })
 
 rowingStatistics.on('recoveryFinished', (metrics) => {
   log.info(`stroke: ${metrics.strokesTotal}, dur: ${metrics.strokeTime.toFixed(2)}s, power: ${Math.round(metrics.power)}w` +
-  `, split: ${metrics.splitFormatted}, ratio: ${metrics.powerRatio.toFixed(2)}, dist: ${metrics.distanceTotal.toFixed(1)}m` +
-  `, cal: ${metrics.caloriesTotal.toFixed(1)}kcal, SPM: ${metrics.strokesPerMinute.toFixed(1)}, speed: ${metrics.speed.toFixed(2)}km/h` +
-  `, cal/hour: ${metrics.caloriesPerHour.toFixed(1)}kcal, cal/minute: ${metrics.caloriesPerMinute.toFixed(1)}kcal`)
+    `, split: ${metrics.splitFormatted}, ratio: ${metrics.powerRatio.toFixed(2)}, dist: ${metrics.distanceTotal.toFixed(1)}m` +
+    `, cal: ${metrics.caloriesTotal.toFixed(1)}kcal, SPM: ${metrics.strokesPerMinute.toFixed(1)}, speed: ${metrics.speed.toFixed(2)}km/h` +
+    `, cal/hour: ${metrics.caloriesPerHour.toFixed(1)}kcal, cal/minute: ${metrics.caloriesPerMinute.toFixed(1)}kcal`)
   log.info('Recovery finished: ' + JSON.stringify(metrics))
   webServer.notifyClients('metrics', metrics)
-  peripheralManager.notifyMetrics('strokeFinished', metrics)
+  if (config.bluetoothMode !== 'none') {
+    peripheralManager.notifyMetrics('strokeFinished', metrics)
+  }
   if (metrics.sessionState === 'rowing') {
     workoutRecorder.recordStroke(metrics)
   }
@@ -109,7 +125,9 @@ rowingStatistics.on('webMetricsUpdate', (metrics) => {
 })
 
 rowingStatistics.on('peripheralMetricsUpdate', (metrics) => {
-  peripheralManager.notifyMetrics('metricsUpdate', metrics)
+  if (config.bluetoothMode !== 'none') {
+    peripheralManager.notifyMetrics('metricsUpdate', metrics)
+  }
 })
 
 rowingStatistics.on('rowingPaused', () => {
@@ -119,13 +137,6 @@ rowingStatistics.on('rowingPaused', () => {
 if (config.heartrateMonitorBLE) {
   const bleCentralService = child_process.fork('./app/ble/CentralService.js')
   bleCentralService.on('message', (heartrateMeasurement) => {
-    rowingStatistics.handleHeartrateMeasurement(heartrateMeasurement)
-  })
-}
-
-if (config.heartrateMonitorANT) {
-  const antManager = createAntManager()
-  antManager.on('heartrateMeasurement', (heartrateMeasurement) => {
     rowingStatistics.handleHeartrateMeasurement(heartrateMeasurement)
   })
 }
@@ -142,7 +153,9 @@ const webServer = createWebServer()
 webServer.on('messageReceived', async (message, client) => {
   switch (message.command) {
     case 'switchPeripheralMode': {
-      peripheralManager.switchPeripheralMode()
+      if (config.bluetoothMode !== 'none') {
+        peripheralManager.switchPeripheralMode()
+      }
       break
     }
     case 'reset': {
@@ -185,16 +198,14 @@ webServer.on('clientConnected', (client) => {
 // todo: extract this into some kind of state manager
 function getConfig () {
   return {
-    peripheralMode: peripheralManager.getPeripheralMode(),
+    peripheralMode: config.bluetoothMode,
     stravaUploadEnabled: !!config.stravaClientId && !!config.stravaClientSecret,
     shutdownEnabled: !!config.shutdownCommand
   }
 }
 
-/*
 replayRowingSession(handleRotationImpulse, {
-  filename: 'recordings/WRX700_2magnets.csv',
+  filename: 'recordings/RM50.csv',
   realtime: true,
   loop: true
 })
-*/

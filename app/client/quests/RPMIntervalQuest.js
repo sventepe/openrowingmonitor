@@ -100,7 +100,8 @@ export class RPMIntervalQuest extends AppElement {
       width: 100%;
       z-index: 1;
       margin: 0px;
-      transition: transform 1s;
+      -webkit-transition: all 1s;
+      transition: all 1s;
     }
     
     .graph {

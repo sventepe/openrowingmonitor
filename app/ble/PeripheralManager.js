@@ -16,7 +16,9 @@ function createPeripheralManager () {
   const emitter = new EventEmitter()
   let peripheral
   let mode
-
+  if (config.bluetoothMode === '') {
+    return null
+  }
   createPeripheral(config.bluetoothMode)
 
   function getPeripheral () {
@@ -58,7 +60,7 @@ function createPeripheralManager () {
         simulateIndoorBike: true
       })
       mode = 'FTMSBIKE'
-    } else {
+    } else if (newMode !== '') {
       log.info('bluetooth profile: FTMS Rower')
       peripheral = createFtmsPeripheral(controlCallback, {
         simulateIndoorBike: false

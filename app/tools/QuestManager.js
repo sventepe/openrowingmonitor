@@ -1,5 +1,5 @@
-//replay von Recordings ans Laufen bringen und dann Anzeige mit LIT Playground Möglichkeiten um Transition erweitern
-//wie replay von bestimmtem File auslösen?
+// replay von Recordings ans Laufen bringen und dann Anzeige mit LIT Playground Möglichkeiten um Transition erweitern
+// wie replay von bestimmtem File auslösen?
 
 // Aktive Quests und Fortschritt speichern, für Anzeige aufbereitet weitergeben
 // Anzeige statt PerformanceDashboard -> Index.js
@@ -24,25 +24,9 @@ import fs from 'fs'
 import readline from 'readline'
 import log from 'loglevel'
 
-
-
-function LoadHistory(){
-  // rekursiv Tcx Dateien crawlen, parsen und Objekte erstellen
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// function LoadHistory () {
+//   // rekursiv Tcx Dateien crawlen, parsen und Objekte erstellen
+// }
 
 function recordRowingSession (filename) {
   // measure the gpio interrupts in another process, since we need
