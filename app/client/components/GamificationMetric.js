@@ -10,7 +10,6 @@ import { customElement, property } from 'lit/decorators.js'
 
 @customElement('gamification-metric')
 export class GamificationMetric extends AppElement {
-
   static styles = css`
     .icon {
       height: 0.8em;
@@ -32,27 +31,27 @@ export class GamificationMetric extends AppElement {
   `
 
   @property({ type: Object })
-  icon
+    icon
 
   @property({ type: String })
-  unit = ''
+    unit = ''
 
   @property({ type: Number })
-  value = 0
-  
-  @property({ type: Number })
-  rawValue = 0
+    value = 0
 
   @property({ type: Number })
-  achievementGoal = 0
+    rawValue = 0
 
   @property({ type: Number })
-  largeAchievementGoal = 0
+    achievementGoal = 0
 
-  render() {
-    var fillPercentage = 100 * (((this.rawValue>0?this.rawValue:this.value) % this.achievementGoal) / this.achievementGoal);
-    if ((this.rawValue>0?this.rawValue:this.value)>0 && fillPercentage == 0) {
-      fillPercentage = 100;
+  @property({ type: Number })
+    largeAchievementGoal = 0
+
+  render () {
+    let fillPercentage = 100 * (((this.rawValue > 0 ? this.rawValue : this.value) % this.achievementGoal) / this.achievementGoal)
+    if ((this.rawValue > 0 ? this.rawValue : this.value) > 0 && fillPercentage === 0) {
+      fillPercentage = 100
     }
     return html`
     <style>

@@ -14,16 +14,8 @@ export class GamificationMetricGauge extends AppElement {
     super()
     this.dampeningValue = 20
     const maximumMetricValue = 29
-    const mediumMetricValue = 25
-    const minimumMetricValue = 21
 
     this.maximumDampenedValue = maximumMetricValue - this.dampeningValue// 13
-    const mediumDampenedValue = mediumMetricValue - this.dampeningValue// 9
-    const minimumDampenedValue = minimumMetricValue - this.dampeningValue // 5
-
-    const minimumPercentage = 100 / this.maximumDampenedValue * minimumDampenedValue // 35?38,46
-    const mediumPercentage = 100 / this.maximumDampenedValue * mediumDampenedValue // 70?69
-    const maximumPercentage = 100 // 100
   }
 
   static styles = css`
@@ -60,13 +52,13 @@ export class GamificationMetricGauge extends AppElement {
   `
 
   @property({ type: Object })
-  icon
+    icon
 
   @property({ type: String })
-  unit = ''
+    unit = ''
 
   @property({ type: Number })
-  value = 0
+    value = 0
 
   @property({ type: Number })
     maximumDampenedValue = 0
@@ -77,27 +69,27 @@ export class GamificationMetricGauge extends AppElement {
   @property({ type: Number })
     dampeningValue = 0
 
-  render() {
-    const rangeIntervals = ['l','m','h']
+  render () {
+    const rangeIntervals = ['l', 'm', 'h']
     const remainder = Math.trunc(this.totalMinutes) % rangeIntervals.length
     const optimalZone = rangeIntervals[remainder]
-    var optimalZoneMinPercentage
+    let optimalZoneMinPercentage
     switch (optimalZone) {
       case 'l':
         optimalZoneMinPercentage = 0
-        break;
+        break
       case 'm':
         optimalZoneMinPercentage = 33.3
-        break;
+        break
       case 'h':
         optimalZoneMinPercentage = 66.6
-        break;
+        break
     }
 
     return html`
-    <div class="currentValue" style="bottom:${Math.min((this.value - this.dampeningValue) > 0 ? 100 / this.maximumDampenedValue * (this.value - this.dampeningValue) : 0,100)}%;"></div>
+    <div class="currentValue" style="bottom:${Math.min((this.value - this.dampeningValue) > 0 ? 100 / this.maximumDampenedValue * (this.value - this.dampeningValue) : 0, 100)}%;"></div>
     <div class="value">${this.value} ${this.unit}</div>
-    <div class="optimalZone" style="bottom:${optimalZoneMinPercentage}%;"</div>
+    <div class="optimalZone" style="bottom: ${optimalZoneMinPercentage}%;"></div>
     `
   }
 }

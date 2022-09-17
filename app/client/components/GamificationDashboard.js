@@ -12,7 +12,7 @@ import './GamificationMetric.js'
 import './GamificationMetricGauge.js'
 import './DashboardActions.js'
 import './BatteryIcon.js'
-import { icon_route, icon_stopwatch, icon_paddle, icon_heartbeat, icon_fire, icon_clock } from '../lib/icons.js'
+import { icon_route, icon_paddle, icon_clock } from '../lib/icons.js'
 import './QuestMetric.js'
 
 @customElement('gamification-dashboard')
@@ -58,8 +58,8 @@ export class GamificationDashboard extends AppElement {
     return html`
       <gamification-metric style="grid-column:1 / span 3; grid-row:1" .achievementGoal=${1000} .largeAchievementGoal=${1000} .icon=${icon_route} .unit=${metrics?.distanceTotal?.unit || 'm'} .value=${metrics?.distanceTotal?.value}></gamification-metric>
       <gamification-metric style="grid-column:1 / span 3; grid-row:2" .achievementGoal=${50} .largeAchievementGoal=${100} .icon=${icon_paddle} unit="total" .value=${metrics?.strokesTotal?.value}></gamification-metric>
-      <gamification-metric style="grid-column:1 / span 3; grid-row:3" .achievementGoal=${5} .largeAchievementGoal=${30} .icon=${icon_clock} .rawValue=${metrics?.durationTotal?.value/60} .value=${metrics?.durationTotalFormatted?.value}></gamification-metric>
-      <gamification-metric-gauge style="grid-column:4; grid-row:1 / span 3"  .value=${metrics?.strokesPerMinute?.value} unit="rpm" .totalMinutes=${metrics?.durationTotal?.value/60}></gamification-metric-gauge>
+      <gamification-metric style="grid-column:1 / span 3; grid-row:3" .achievementGoal=${5} .largeAchievementGoal=${30} .icon=${icon_clock} .rawValue=${metrics?.durationTotal?.value / 60} .value=${metrics?.durationTotalFormatted?.value}></gamification-metric>
+      <gamification-metric-gauge style="grid-column:4; grid-row:1 / span 3"  .value=${metrics?.strokesPerMinute?.value} unit="rpm" .totalMinutes=${metrics?.durationTotal?.value / 60}></gamification-metric-gauge>
       `
   }
 
