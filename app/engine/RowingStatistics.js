@@ -109,7 +109,7 @@ function createRowingStatistics (config) {
     if (stroke.duration < timeBetweenStrokesBeforePause && stroke.duration > minimumStrokeTime) {
       // stroke duration has to be plausible to be accepted
       powerRatioAverager.pushValue(stroke.durationDrivePhase / stroke.duration)
-      strokeAverager.pushValue(stroke.duration)
+      // strokeAverager.pushValue(stroke.duration)
     } else {
       log.debug(`*** Stroke duration of ${stroke.duration} sec is considered unreliable, skipped update stroke statistics`)
     }

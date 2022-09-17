@@ -22,7 +22,7 @@ export class GamificationMetricGauge extends AppElement {
   .currentValue {
     position: absolute;
     width: 100%;
-    height: 0.1em;
+    height: 0.4em;
     z-index: 2;
     background-color: crimson;
     -webkit-transition: all 1s;
@@ -43,12 +43,12 @@ export class GamificationMetricGauge extends AppElement {
     -webkit-transition: all 1s;
     transition: all 1s;
   }
-
-    ::slotted(*) {
-      right: 0.2em;
-      bottom: 0;
-      position: absolute;
-    }
+  dashboard-actions {
+    position: absolute;
+    bottom: 0.5em;
+    width: 100%;
+    left: 0em;
+  }  
   `
 
   @property({ type: Object })
@@ -90,6 +90,7 @@ export class GamificationMetricGauge extends AppElement {
     <div class="currentValue" style="bottom:${Math.min((this.value - this.dampeningValue) > 0 ? 100 / this.maximumDampenedValue * (this.value - this.dampeningValue) : 0, 100)}%;"></div>
     <div class="value">${this.value} ${this.unit}</div>
     <div class="optimalZone" style="bottom: ${optimalZoneMinPercentage}%;"></div>
+    <dashboard-actions .appState=${this.appState}></dashboard-actions>
     `
   }
 }
