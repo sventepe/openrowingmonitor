@@ -10,6 +10,7 @@ import { customElement, state } from 'lit/decorators.js'
 import { APP_STATE } from './store/appState.js'
 import { createApp } from './lib/app.js'
 import './components/PerformanceDashboard.js'
+import './components/GamificationDashboard.js'
 
 @customElement('web-app')
 export class App extends LitElement {
@@ -59,10 +60,10 @@ export class App extends LitElement {
   // instead of embedding the performance-dashboard directly
   render () {
     return html`
-      <performance-dashboard
+      <gamification-dashboard
         .appState=${this.appState}
         .metrics=${this.metrics}
-      ></performance-dashboard>
+      ></gamification-dashboard>
     `
   }
 
