@@ -10,9 +10,6 @@ import { customElement, property } from 'lit/decorators.js'
 
 @customElement('gamification-metric')
 export class GamificationMetric extends AppElement {
-  script() {
-
-  }
   static styles = css`
     .icon {
       height: 0.8em;
@@ -53,9 +50,9 @@ export class GamificationMetric extends AppElement {
 
   render () {
     let currentValue = (this.rawValue > 0 ? this.rawValue : this.value)
-    let largeAchievements = Math.trunc(currentValue / this.largeAchievementGoal)
-    currentValue = currentValue - (largeAchievements*this.largeAchievementGoal)
-    let smallAchievements = Math.trunc(currentValue / this.achievementGoal)
+    const largeAchievements = Math.trunc(currentValue / this.largeAchievementGoal)
+    currentValue = currentValue - (largeAchievements * this.largeAchievementGoal)
+    const smallAchievements = Math.trunc(currentValue / this.achievementGoal)
     let fillPercentage = 100 * (((this.rawValue > 0 ? this.rawValue : this.value) % this.achievementGoal) / this.achievementGoal)
     if ((this.rawValue > 0 ? this.rawValue : this.value) > 0 && fillPercentage === 0) {
       fillPercentage = 100
@@ -74,35 +71,35 @@ export class GamificationMetric extends AppElement {
         transition: all 1s;
       }
       .d1 {
-        color: ${smallAchievements>=1?"crimson;":"#00091c;"}
+        color: ${smallAchievements >= 1 ? 'crimson;' : '#00091c;'}
       }
       .d2 {
 
-        color: ${smallAchievements>=2?"crimson;":"#00091c;"}
+        color: ${smallAchievements >= 2 ? 'crimson;' : '#00091c;'}
       }
       .d3 {
-        color: ${smallAchievements>=3?"crimson;":"#00091c;"}
+        color: ${smallAchievements >= 3 ? 'crimson;' : '#00091c;'}
       }
       .d4 {
-        color: ${smallAchievements>=4?"crimson;":"#00091c;"}
+        color: ${smallAchievements >= 4 ? 'crimson;' : '#00091c;'}
       }
       .d5 {
-        color: ${smallAchievements>=5?"crimson;":"#00091c;"}
+        color: ${smallAchievements >= 5 ? 'crimson;' : '#00091c;'}
       }
       .s1 {
-        color: ${largeAchievements>=1?"crimson;":"#00091c;"}
+        color: ${largeAchievements >= 1 ? 'crimson;' : '#00091c;'}
       }
       .s2 {
-        color: ${largeAchievements>=2?"crimson;":"#00091c;"}
+        color: ${largeAchievements >= 2 ? 'crimson;' : '#00091c;'}
       }
       .s3 {
-        color: ${largeAchievements>=3?"crimson;":"#00091c;"}
+        color: ${largeAchievements >= 3 ? 'crimson;' : '#00091c;'}
       }
       .s4 {
-        color: ${largeAchievements>=4?"crimson;":"#00091c;"}
+        color: ${largeAchievements >= 4 ? 'crimson;' : '#00091c;'}
       }
       .s5 {
-        color: ${largeAchievements>=5?"crimson;":"#00091c;"}
+        color: ${largeAchievements >= 5 ? 'crimson;' : '#00091c;'}
       }
     </style>
     <div class="progress-bar"></div>
