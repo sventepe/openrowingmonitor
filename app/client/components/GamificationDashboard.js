@@ -36,7 +36,6 @@ export class GamificationDashboard extends AppElement {
 
     gamification-metric, gamification-metric-gauge, quest-metric, dashboard-actions {
       background: var(--theme-widget-color);
-      text-align: center;
       position: relative;
       padding: 1.5em 0 0 0;
       box-sizing: border-box;
@@ -56,10 +55,10 @@ export class GamificationDashboard extends AppElement {
   render () {
     const metrics = this.calculateFormattedMetrics(this.appState.metrics)
     return html`
-      <gamification-metric style="grid-column:1 / span 3; grid-row:1" .achievementGoal=${1000} .largeAchievementGoal=${1000} .icon=${icon_route} .unit=${metrics?.distanceTotal?.unit || 'm'} .value=${metrics?.distanceTotal?.value}></gamification-metric>
-      <gamification-metric style="grid-column:1 / span 3; grid-row:2" .achievementGoal=${50} .largeAchievementGoal=${100} .icon=${icon_paddle} unit="total" .value=${metrics?.strokesTotal?.value}></gamification-metric>
+      <gamification-metric style="grid-column:1 / span 3; grid-row:1" .achievementGoal=${1000} .largeAchievementGoal=${5000} .icon=${icon_route} .unit=${metrics?.distanceTotal?.unit || 'm'} .value=${metrics?.distanceTotal?.value}></gamification-metric>
+      <gamification-metric style="grid-column:1 / span 3; grid-row:2" .achievementGoal=${50} .largeAchievementGoal=${250} .icon=${icon_paddle} .value=${metrics?.strokesTotal?.value}></gamification-metric>
       <gamification-metric style="grid-column:1 / span 3; grid-row:3" .achievementGoal=${5} .largeAchievementGoal=${30} .icon=${icon_clock} .rawValue=${metrics?.durationTotal?.value / 60} .value=${metrics?.durationTotalFormatted?.value}></gamification-metric>
-      <gamification-metric-gauge style="grid-column:4; grid-row:1 / span 3"  .value=${metrics?.strokesPerMinute?.value} unit="rpm" .totalMinutes=${metrics?.durationTotal?.value / 60}></gamification-metric-gauge>
+      <gamification-metric-gauge style="grid-column:4; grid-row:1 / span 3; text-align:center"  .value=${metrics?.strokesPerMinute?.value} unit="rpm" .totalMinutes=${metrics?.durationTotal?.value / 60}></gamification-metric-gauge>
       `
   }
 
